@@ -1,4 +1,6 @@
 from collections import UserDict
+from datetime import datetime, timedelta
+import re
 
 
 class Field:
@@ -10,17 +12,52 @@ class Field:
 
 
 class Name(Field):
-    def __str__(self):
-        return str(self.value)
+    pass
+
+
+class Birthday(Field):
+    def __init__(self, value):
+        self.__value = None
+        self.value = value
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value):
+        if self.is_valid_date(value) and not self.has_birthday():
+            self.__value = value
+        elif not self.is_valid_date(value):
+            raise ValueError("Incorrect date format. Use DD.MM.YYYY")
+        elif self.has_birthday():
+            raise ValueError("The birthday has alrady added")
+
+    def is_valid_date(self, date):
+        # Використовуємо регулярний вираз для перевірки формату
+        date_pattern = r"^\d{2}\.\d{2}.\d{4}$"
+        return re.match(date_pattern, date) is not None
+
+    def has_birthday(self):
+        return any(isinstance(field, Birthday) for field in self.value)
 
 
 class Phone(Field):
-    def __str__(self):
-        return str(self.value)
-
     def __init__(self, value):
+        self.__value = None
+        self.value = value
+
+    def __str__(self):
+        return str(self.__value)
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value):
         if self.validate_phone(value):
-            super().__init__(value)
+            self.__value = value
         else:
             raise ValueError("Invalid phone number")
 
@@ -32,6 +69,7 @@ class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
+        self.birthday = None
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -54,6 +92,13 @@ class Record:
                 return phone
         return "Phone not found"
 
+    def add_birthday(self, birthday):
+        if self.birthday == None:
+            self.birthday = birthday
+            return "You add the birthday"
+        else:
+            return "The birthday has alrady added"
+
 
 class AddressBook(UserDict):
     def add_record(self, record):
@@ -68,6 +113,15 @@ class AddressBook(UserDict):
             return self.data[name]
         else:
             return None
+
+    def show_birthday(self, name):
+        if name in self.data:
+            return self.data[name].birthday
+        else:
+            return None
+
+    def get_birthdays_per_week(self):
+        pass
 
 
 if __name__ == "__main__":
@@ -94,12 +148,13 @@ if __name__ == "__main__":
     # Знаходження та редагування телефону для John
     john = book.find("John")
     john.edit_phone("1234567890", "1112223333")
+    john.add_birthday("29.10.1999")
 
     print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
 
     # Пошук конкретного телефону у записі John
     found_phone = john.find_phone("5555555555")
     print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
-
+    print(book.show_birthday("John"))
     # Видалення запису Jane
     book.delete("Jane")
