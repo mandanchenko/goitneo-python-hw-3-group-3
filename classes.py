@@ -1,6 +1,16 @@
-from collections import UserDict
+from collections import UserDict, defaultdict
 from datetime import datetime, timedelta
 import re
+
+DAYS_OF_WEEK = {
+    0: "Monday",
+    1: "Tuesday",
+    2: "Wednesday",
+    3: "Thursday",
+    4: "Friday",
+    5: "Saturday",
+    6: "Sunday",
+}
 
 
 class Field:
@@ -120,8 +130,43 @@ class AddressBook(UserDict):
         else:
             return None
 
+    @staticmethod
+    def sorted_birthdays(today, birthdays_dict):
+        befor_today = [i for i in range(7) if i >= today]
+        after_today = [j for j in range(7) if j < today]
+        desired_order = befor_today + after_today
+        sorted_data = {}
+        for key in desired_order:
+            if key in birthdays_dict:
+                sorted_data[key] = birthdays_dict[key]
+        return sorted_data
+
     def get_birthdays_per_week(self):
-        pass
+        week_birthdays = defaultdict(list)
+        this_day = datetime.today().date()
+        this_day_of_week = this_day.weekday()
+        for name in self.data:
+            birthday = datetime.strptime(self.data[name].birthday, "%d.%m.%Y").date()
+            birthday_this_year = birthday.replace(year=this_day.year)
+            if birthday_this_year < this_day:
+                birthday_this_year = birthday.replace(year=(this_day.year + 1))
+            if (birthday_this_year - this_day) < timedelta(days=7):
+                day = birthday_this_year.weekday()
+                # якщо сьгодні не понеділок, переносимо дні народження з вихідних на наступний понеділок
+                if day > 4 and this_day_of_week > 0:
+                    week_birthdays[0].append(name)
+                # якщо сьгодні понеділок - не виводимо дні народження які припадаюь на вихідні
+                elif day > 4 and this_day_of_week == 0:
+                    continue
+                # робочі дні записуємо самі в себе
+                else:
+                    week_birthdays[day].append(name)
+
+        sorted_week_birthdays = self.sorted_birthdays(this_day_of_week, week_birthdays)
+        for key in sorted_week_birthdays.keys():
+            day_name = DAYS_OF_WEEK[key]
+            str_of_names = ", ".join(sorted_week_birthdays[key])
+            print(f"{day_name}: {str_of_names}")
 
 
 if __name__ == "__main__":
@@ -139,6 +184,7 @@ if __name__ == "__main__":
     # Створення та додавання нового запису для Jane
     jane_record = Record("Jane")
     jane_record.add_phone("9876543210")
+    jane_record.add_birthday("03.11.1999")
     book.add_record(jane_record)
 
     # Виведення всіх записів у книзі
@@ -156,5 +202,6 @@ if __name__ == "__main__":
     found_phone = john.find_phone("5555555555")
     print(f"{john.name}: {found_phone}")  # Виведення: 5555555555
     print(book.show_birthday("John"))
+    book.get_birthdays_per_week()
     # Видалення запису Jane
     book.delete("Jane")

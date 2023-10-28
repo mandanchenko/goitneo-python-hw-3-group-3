@@ -24,25 +24,24 @@ def parse_input(user_input):
 
 @input_error
 def main():
-    contacts = {}
+    book = AddressBook()
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
         command, *args = parse_input(user_input)
-        book = AddressBook()
         if command in ["close", "exit"]:
             print("Good bye!")
             break
         elif command == "hello":
             print("How can I help you?")
         elif command == "add":
-            for name, record in book.data.items():
-                print(record)
+            pass
         elif command == "change":
             print(change_contact(args, contacts))
         elif command == "phone":
             print(show_phone(args[0], contacts))
         elif command == "all":
-            print(show_all(contacts))
+            for name, record in book.data.items():
+                print(record)
         else:
             print("Invalid command.")
