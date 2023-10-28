@@ -1,4 +1,4 @@
-from .classes import AddressBook, Record
+from classes import AddressBook, Record
 
 
 def input_error(func):
@@ -35,13 +35,39 @@ def main():
         elif command == "hello":
             print("How can I help you?")
         elif command == "add":
-            pass
+            new_record = Record(args[0])
+            new_record.add_phone(args[1])
+            book.add_record(new_record)
+            print("Contact added.")
         elif command == "change":
-            print(change_contact(args, contacts))
+            if book.delete(args[0]):
+                new_record = Record(args[0])
+                new_record.add_phone(args[1])
+                book.add_record(new_record)
+                print("Contact updated.")
+            else:
+                print("Name not found!")
         elif command == "phone":
-            print(show_phone(args[0], contacts))
+            searched_record = book.find(args[0])
+            print(searched_record.phones)
         elif command == "all":
             for name, record in book.data.items():
                 print(record)
+        # add-birthday [ім'я] [дата народження]: Додати дату народження для вказаного контакту.
+        elif command == "add-birthday":
+            searched_record = book.find(args[0])
+            searched_record.add_birthday(args[1])
+
+        # show-birthday [ім'я]: Показати дату народження для вказаного контакту.
+        elif command == "show-birthday":
+            print(book.show_birthday(args[0]))
+
+        # birthdays: Показати дні народження, які відбудуться протягом наступного тижня.
+        elif command == "birthdays":
+            book.get_birthdays_per_week()
         else:
             print("Invalid command.")
+
+
+if __name__ == "__main__":
+    main()

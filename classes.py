@@ -36,20 +36,15 @@ class Birthday(Field):
 
     @value.setter
     def value(self, value):
-        if self.is_valid_date(value) and not self.has_birthday():
-            self.__value = value
+        if self.is_valid_date(value):
+            self.__value = datetime.strptime(value, "%d.%m.%Y").date()
         elif not self.is_valid_date(value):
             raise ValueError("Incorrect date format. Use DD.MM.YYYY")
-        elif self.has_birthday():
-            raise ValueError("The birthday has alrady added")
 
     def is_valid_date(self, date):
         # Використовуємо регулярний вираз для перевірки формату
         date_pattern = r"^\d{2}\.\d{2}.\d{4}$"
         return re.match(date_pattern, date) is not None
-
-    def has_birthday(self):
-        return any(isinstance(field, Birthday) for field in self.value)
 
 
 class Phone(Field):
@@ -104,7 +99,7 @@ class Record:
 
     def add_birthday(self, birthday):
         if self.birthday == None:
-            self.birthday = birthday
+            self.birthday = Birthday(birthday)
             return "You add the birthday"
         else:
             return "The birthday has alrady added"
@@ -117,6 +112,9 @@ class AddressBook(UserDict):
     def delete(self, name):
         if name in self.data:
             del self.data[name]
+            return True
+        else:
+            return False
 
     def find(self, name):
         if name in self.data:
@@ -146,7 +144,7 @@ class AddressBook(UserDict):
         this_day = datetime.today().date()
         this_day_of_week = this_day.weekday()
         for name in self.data:
-            birthday = datetime.strptime(self.data[name].birthday, "%d.%m.%Y").date()
+            birthday = self.data[name].birthday.value
             birthday_this_year = birthday.replace(year=this_day.year)
             if birthday_this_year < this_day:
                 birthday_this_year = birthday.replace(year=(this_day.year + 1))
