@@ -23,46 +23,69 @@ def parse_input(user_input):
 
 
 @input_error
+def add_contact(args, book):
+    new_record = Record(args[0])
+    new_record.add_phone(args[1])
+    book.add_record(new_record)
+    return "Contact added."
+
+
+@input_error
+def change_contact(args, book):
+    if book.delete(args[0]):
+        new_record = Record(args[0])
+        new_record.add_phone(args[1])
+        book.add_record(new_record)
+        return "Contact updated."
+    else:
+        return "Name not found!"
+
+
+@input_error
+def show_phone(arg, book):
+    searched_record = book.find(arg)
+    for phone in searched_record.phones:
+        print(phone)
+
+
+@input_error
+def show_all(book):
+    for name, record in book.data.items():
+        print(record)
+
+
+@input_error
+def add_birthday(args, book):
+    searched_record = book.find(args[0])
+    searched_record.add_birthday(args[1])
+    return "birthday added"
+
+
+@input_error
 def main():
     book = AddressBook()
     print("Welcome to the assistant bot!")
     while True:
         user_input = input("Enter a command: ")
         command, *args = parse_input(user_input)
+
         if command in ["close", "exit"]:
             print("Good bye!")
             break
         elif command == "hello":
             print("How can I help you?")
         elif command == "add":
-            new_record = Record(args[0])
-            new_record.add_phone(args[1])
-            book.add_record(new_record)
-            print("Contact added.")
+            print(add_contact(args, book))
         elif command == "change":
-            if book.delete(args[0]):
-                new_record = Record(args[0])
-                new_record.add_phone(args[1])
-                book.add_record(new_record)
-                print("Contact updated.")
-            else:
-                print("Name not found!")
+            print(change_contact(args, book))
         elif command == "phone":
-            searched_record = book.find(args[0])
-            print(searched_record.phones)
+            show_phone(args[0], book)
         elif command == "all":
-            for name, record in book.data.items():
-                print(record)
-        # add-birthday [ім'я] [дата народження]: Додати дату народження для вказаного контакту.
+            show_all(book)
         elif command == "add-birthday":
-            searched_record = book.find(args[0])
-            searched_record.add_birthday(args[1])
-
-        # show-birthday [ім'я]: Показати дату народження для вказаного контакту.
+            print(add_birthday(args, book))
         elif command == "show-birthday":
             print(book.show_birthday(args[0]))
-
-        # birthdays: Показати дні народження, які відбудуться протягом наступного тижня.
         elif command == "birthdays":
             book.get_birthdays_per_week()
         else:

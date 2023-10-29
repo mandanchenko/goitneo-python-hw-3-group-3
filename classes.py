@@ -144,21 +144,22 @@ class AddressBook(UserDict):
         this_day = datetime.today().date()
         this_day_of_week = this_day.weekday()
         for name in self.data:
-            birthday = self.data[name].birthday.value
-            birthday_this_year = birthday.replace(year=this_day.year)
-            if birthday_this_year < this_day:
-                birthday_this_year = birthday.replace(year=(this_day.year + 1))
-            if (birthday_this_year - this_day) < timedelta(days=7):
-                day = birthday_this_year.weekday()
-                # якщо сьгодні не понеділок, переносимо дні народження з вихідних на наступний понеділок
-                if day > 4 and this_day_of_week > 0:
-                    week_birthdays[0].append(name)
-                # якщо сьгодні понеділок - не виводимо дні народження які припадаюь на вихідні
-                elif day > 4 and this_day_of_week == 0:
-                    continue
-                # робочі дні записуємо самі в себе
-                else:
-                    week_birthdays[day].append(name)
+            if self.data[name].birthday:
+                birthday = self.data[name].birthday.value
+                birthday_this_year = birthday.replace(year=this_day.year)
+                if birthday_this_year < this_day:
+                    birthday_this_year = birthday.replace(year=(this_day.year + 1))
+                if (birthday_this_year - this_day) < timedelta(days=7):
+                    day = birthday_this_year.weekday()
+                    # якщо сьгодні не понеділок, переносимо дні народження з вихідних на наступний понеділок
+                    if day > 4 and this_day_of_week > 0:
+                        week_birthdays[0].append(name)
+                    # якщо сьгодні понеділок - не виводимо дні народження які припадаюь на вихідні
+                    elif day > 4 and this_day_of_week == 0:
+                        continue
+                    # робочі дні записуємо самі в себе
+                    else:
+                        week_birthdays[day].append(name)
 
         sorted_week_birthdays = self.sorted_birthdays(this_day_of_week, week_birthdays)
         for key in sorted_week_birthdays.keys():
@@ -182,7 +183,7 @@ if __name__ == "__main__":
     # Створення та додавання нового запису для Jane
     jane_record = Record("Jane")
     jane_record.add_phone("9876543210")
-    jane_record.add_birthday("03.11.1999")
+    jane_record.add_birthday("31.10.1999")
     book.add_record(jane_record)
 
     # Виведення всіх записів у книзі
@@ -192,7 +193,7 @@ if __name__ == "__main__":
     # Знаходження та редагування телефону для John
     john = book.find("John")
     john.edit_phone("1234567890", "1112223333")
-    john.add_birthday("29.10.1999")
+    john.add_birthday("28.10.1999")
 
     print(john)  # Виведення: Contact name: John, phones: 1112223333; 5555555555
 
